@@ -1,0 +1,80 @@
+.background {
+  background: url(../../assets/bg-image-forecast.jpg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.searchbar-row {
+  height: 30%;
+  align-items: center;
+}
+
+.slider-row {
+  flex: 1;
+}
+
+.slides {
+  height: 100%;
+}
+
+.errorMessage {
+  padding-left: 15px;
+  color: red;
+}
+
+.card {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.chart-canvas-div {
+  width: 100%;
+  height: 100%;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.card-content {
+  height: 70%;
+}
+
+@media screen and (max-width: 1024px) {
+  .card-header {
+    font-size: 3.5vw;
+  }
+
+  .emptyArray {
+    font-size: 3.5vw;
+    font-weight: bold;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .card-header {
+    font-size: 4vw;
+  }
+
+  .emptyArray {
+    font-size: 4vw;
+    font-weight: bold;
+  }
+}
+
+.card-header {
+  height: 20%;
+  font-weight: bold;
+}
+
+.container-grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}

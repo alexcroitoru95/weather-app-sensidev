@@ -1,0 +1,46 @@
+<ion-content class="background" padding>
+  <ion-grid class="container-grid">
+    <ion-row class="searchbar-row" justify-content-center>
+      <ion-col col-12>
+        <ion-searchbar id="searchbar" color="primary" animated [(ngModel)]="userInputCity" (search)="searchByKeyword()" placeholder="Enter city name or id">
+        </ion-searchbar>
+        <p class="errorMessage" id="emptyWeatherForecast" *ngIf="emptyWeatherForecast">Invalid City Name or ID. Try Again!</p>
+      </ion-col>
+    </ion-row>
+    <ion-row class="slider-row" *ngIf="daysForecastArray?.length" justify-content-center>
+      <ion-col col-12>
+        <ion-slides class="slides" pager="true">
+          <ion-slide>
+            <ion-card class="card">
+              <ion-card-header class="card-header">
+                Temperature Chart for {{weatherForecast?.city_name}}, {{weatherForecast?.country_code}}
+                <br>Avg.Temperature (°C)
+              </ion-card-header>
+              <ion-card-content class="card-content">
+                <div class="chart-canvas-div">
+                  <canvas class="canvas" baseChart [data]="doughnutChartTemperatureData" [labels]="doughnutChartDaysLabels" [chartType]="doughnutChartType"
+                    [options]="doughnutChartOptions"></canvas>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-slide>
+          <ion-slide>
+            <ion-card class="card">
+              <ion-card-header class="card-header">
+                Precipitation Chart for {{weatherForecast?.city_name}}, {{weatherForecast?.country_code}}
+                <br>Unit of measurement (mm)
+              </ion-card-header>
+              <ion-card-content class="card-content">
+                <div class="chart-canvas-div">
+                  <p class="emptyArray" *ngIf="emptyChartArray">All Values are 0!</p>
+                  <canvas class="canvas" baseChart [data]="doughnutChartPrecipitationData" [labels]="doughnutChartDaysLabels" [chartType]="doughnutChartType"
+                    [options]="doughnutChartOptions"></canvas>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-slide>
+        </ion-slides>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
