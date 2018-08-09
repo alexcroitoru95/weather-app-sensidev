@@ -12,7 +12,7 @@ export class WeatherService {
   weatherApiObject: weatherApiObject = {};
 
   constructor(public http: HttpClient) {
-    this.weatherApiObject.weatherApiKey = "8265a1c54b9045608b523f7a28a5c89b";
+    this.weatherApiObject.weatherApiKey = "3c25f83f7d684133bc089a882efc297d";
   }
 
   getFutureWeatherForecast(userInputCity) {

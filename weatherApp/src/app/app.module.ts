@@ -8,9 +8,9 @@ import { StatusBar } from "@ionic-native/status-bar/ngx";
 
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
-import { WeatherService } from "../app/services/weatherService/weather-service.service";
+import { WeatherService } from "./services/weatherService/weather-service.service";
+import { DataService } from "./services/dataService/data-service.service";
 import { HttpClientModule } from "@angular/common/http";
-
 import { ChartsModule } from "ng2-charts/ng2-charts";
 
 @NgModule({
@@ -27,7 +27,8 @@ import { ChartsModule } from "ng2-charts/ng2-charts";
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    WeatherService
+    WeatherService,
+    DataService
   ],
   bootstrap: [AppComponent]
 })

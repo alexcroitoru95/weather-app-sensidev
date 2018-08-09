@@ -5,6 +5,7 @@ import { HttpClientModule } from "../../../node_modules/@angular/common/http";
 import { AlertController } from "../../../node_modules/@ionic/angular";
 import { ChartsModule } from "ng2-charts/ng2-charts";
 import { HistoryPage } from "./history.page";
+import { SelectSearchableModule } from "ionic-select-searchable";
 
 describe("HistoryPage", () => {
   let component: HistoryPage;
@@ -13,7 +14,7 @@ describe("HistoryPage", () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       declarations: [HistoryPage],
-      imports: [ChartsModule, HttpClientModule],
+      imports: [ChartsModule, HttpClientModule, SelectSearchableModule],
       providers: [WeatherService, AlertController],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();

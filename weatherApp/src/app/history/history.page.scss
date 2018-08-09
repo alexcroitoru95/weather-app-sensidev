@@ -10,12 +10,37 @@
   align-items: center;
 }
 
+.list-header {
+  margin-bottom: 0;
+}
+
+.previous-cities-row {
+  flex: 1;
+}
+
+.search-list {
+  width: 95% !important;
+  margin-left: 8px;
+  overflow-y: scroll;
+}
+
+.search-item {
+  border-bottom-style: solid;
+  border-color: grey;
+  border-width: 1px;
+}
+
 .slider-row {
   flex: 1;
 }
 
 .slides {
   height: 100%;
+}
+
+.errorMessage {
+  padding-left: 15px;
+  color: red;
 }
 
 .card {

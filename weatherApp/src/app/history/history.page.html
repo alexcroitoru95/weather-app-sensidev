@@ -2,69 +2,42 @@
   <ion-grid class="container-grid">
     <ion-row class="searchbar-row" justify-content-center>
       <ion-col col-12>
-        <ion-searchbar color="primary" animated [(ngModel)]="userInputCity" (search)="searchByKeyword()" placeholder="Enter city name or id">
+        <ion-searchbar color="primary" animated [(ngModel)]="userInputCity" (search)="searchByKeyword()" (ionInput)="searchCityHistory($event)"
+          placeholder="Enter city name or id">
         </ion-searchbar>
+        <p class="errorMessage" id="emptyWeatherForecast" *ngIf="emptyWeatherForecast">Invalid City Name or ID. Try Again!</p>
       </ion-col>
     </ion-row>
-    <ion-row class="slider-row" *ngIf="daysForecastArray?.length" justify-content-center>
+    <ion-row class="previous-cities-row" *ngIf="showCitiesAlreadySearched">
+      <ion-list class="search-list" justify-content-center>
+        <ion-list-header class="list-header">
+          Previous Searches
+        </ion-list-header>
+        <ion-item detail-push class="search-item" *ngFor="let item of searchedCities" (click)="selectedCityFromSearchBar(item)">
+          {{ item }}
+        </ion-item>
+      </ion-list>
+    </ion-row>
+    <ion-row class="slider-row" *ngIf="daysForecastArray?.length && !showCitiesAlreadySearched && templateCards?.length >= 3"
+      justify-content-center>
       <ion-col col-12>
-        <ion-slides class="slides" pager="true">
-          <ion-slide>
+        <ion-slides #slides class="slides" pager="true">
+          <ion-slide *ngFor="let card of templateCards">
             <ion-card class="card">
               <ion-card-header class="card-header">
-                Temperature Chart for {{weatherForecast?.city_name}}, {{weatherForecast?.country_code}}
-                <br>Unit of measurement (°C)
+                {{card?.cardTitle}} Chart for {{weatherForecast?.city_name}}, {{weatherForecast?.country_code}}
+                <br>Unit of measurement ({{card?.unitOfMeasurement}})
               </ion-card-header>
               <ion-card-content class="card-content">
                 <div>
-                  Lowest value: {{lowestValueTemp}}
-                  <br> Average value: {{averageValueTemp}}
-                  <br> Highest value: {{maxValueTemp}}
+                  Lowest value: {{card?.lowestValue}}
+                  <br> Average value: {{card?.averageValue}}
+                  <br> Highest value: {{card?.maxValue}}
                   <br>
                 </div>
                 <div class="chart-canvas-div">
-                  <canvas class="canvas" baseChart #temperatureChart="base-chart" [legend]="false" [data]="doughnutChartTemperatureData" [labels]="doughnutChartDaysLabels"
-                    [chartType]="doughnutChartType" [options]="doughnutChartOptions"></canvas>
-                </div>
-              </ion-card-content>
-            </ion-card>
-          </ion-slide>
-          <ion-slide>
-            <ion-card class="card">
-              <ion-card-header class="card-header">
-                Pressure Chart for {{weatherForecast?.city_name}}, {{weatherForecast?.country_code}}
-                <br>Unit of measurement (mb)
-              </ion-card-header>
-              <ion-card-content class="card-content">
-                <div>
-                  Lowest value: {{lowestValuePressure}}
-                  <br> Average value: {{averageValuePressure}}
-                  <br> Highest value: {{maxValuePressure}}
-                  <br>
-                </div>
-                <div class="chart-canvas-div">
-                  <canvas class="canvas" baseChart #pressureChart="base-chart" [legend]="false" [data]="doughnutChartPressureData" [labels]="doughnutChartDaysLabels"
-                    [chartType]="doughnutChartType" [options]="doughnutChartOptions"></canvas>
-                </div>
-              </ion-card-content>
-            </ion-card>
-          </ion-slide>
-          <ion-slide>
-            <ion-card class="card">
-              <ion-card-header class="card-header">
-                Humidity Chart for {{weatherForecast?.city_name}}, {{weatherForecast?.country_code}}
-                <br>Unit of measurement (%)
-              </ion-card-header>
-              <ion-card-content class="card-content">
-                <div>
-                  Lowest value: {{lowestValueHumidity}}
-                  <br> Average value: {{averageValueHumidity}}
-                  <br> Highest value: {{maxValueHumidity}}
-                  <br>
-                </div>
-                <div class="chart-canvas-div">
-                  <canvas class="canvas" baseChart #humidityChart="base-chart" [legend]="false" [data]="doughnutChartHumidityData" [labels]="doughnutChartDaysLabels"
-                    [chartType]="doughnutChartType" [options]="doughnutChartOptions"></canvas>
+                  <canvas class="canvas" baseChart [legend]="false" [data]="card?.barChartData" [labels]="barChartDaysLabels" [chartType]="barChartType"
+                    [options]="barChartOptions"></canvas>
                 </div>
               </ion-card-content>
             </ion-card>

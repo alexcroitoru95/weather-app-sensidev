@@ -1,7 +1,10 @@
-import { Component, ViewChild, QueryList } from "@angular/core";
+import { Component, ViewChildren, ViewChild } from "@angular/core";
 import { AlertController } from "@ionic/angular";
 import { WeatherService } from "../services/weatherService/weather-service.service";
+import { DataService } from "../services/dataService/data-service.service";
 import { BaseChartDirective } from "ng2-charts/ng2-charts";
+import { TemplateCardHistory } from "../interfaces/TemplateCardHistory";
+import { Slides } from "ionic-angular";
 import "chart.js";
 
 @Component({
@@ -10,21 +13,26 @@ import "chart.js";
   styleUrls: ["history.page.scss"]
 })
 export class HistoryPage {
-  @ViewChild("temperatureChart") temperatureChart: BaseChartDirective;
-  @ViewChild("pressureChart") pressureChart: BaseChartDirective;
-  @ViewChild("humidityChart") humidityChart: BaseChartDirective;
+  @ViewChildren(BaseChartDirective)
+  baseCharts: BaseChartDirective;
+  @ViewChild("slides")
+  slides: Slides;
 
   userInputCity: {};
+  searchedCities: Array<string>;
   weatherForecast: any;
   daysForecastArray: Array<any>;
+  templateCards: Array<TemplateCardHistory>;
   currentDate: Date;
   pastDate: Date;
+  emptyWeatherForecast: boolean;
+  showCitiesAlreadySearched: boolean;
 
-  doughnutChartType: string = "doughnut";
-  doughnutChartDaysLabels: string[];
-  doughnutChartTemperatureData: number[];
-  doughnutChartPressureData: number[];
-  doughnutChartHumidityData: number[];
+  barChartType: string = "bar";
+  barChartDaysLabels: string[];
+  barChartTemperatureData: number[];
+  barChartPressureData: number[];
+  barChartHumidityData: number[];
 
   lowestValueTemp: string;
   lowestValuePressure: string;
@@ -35,6 +43,17 @@ export class HistoryPage {
   maxValueTemp: string;
   maxValuePressure: string;
   maxValueHumidity: string;
+
+  cardTitleTemperature: string = "Temperature";
+  unitOfMeasurementTemperature: string = "°C";
+  cardTitlePressure: string = "Pressure";
+  unitOfMeasurementPressure: string = "mb";
+  cardTitleHumidity: string = "Humidity";
+  unitOfMeasurementHumidity: string = "%";
+
+  barChartOptions = {
+    maintainAspectRatio: false
+  };
 
   chartBackgroundColors = [
     "rgba(255,99,132,0.6)",
@@ -55,27 +74,49 @@ export class HistoryPage {
 
   constructor(
     private weatherService: WeatherService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private dataService: DataService
   ) {
+    this.searchedCities = dataService.searchedCities;
+    this.showCitiesAlreadySearched = false;
     this.weatherForecast = {};
     this.daysForecastArray = [];
-    this.doughnutChartDaysLabels = [];
-    this.doughnutChartTemperatureData = [];
-    this.doughnutChartPressureData = [];
-    this.doughnutChartHumidityData = [];
+    this.barChartDaysLabels = [];
+    this.barChartTemperatureData = [];
+    this.barChartPressureData = [];
+    this.barChartHumidityData = [];
     this.currentDate = new Date();
     this.pastDate = new Date();
+    this.emptyWeatherForecast = false;
   }
 
-  doughnutChartOptions = {
-    maintainAspectRatio: false
-  };
+  searchCityHistory(event) {
+    this.searchedCities = this.dataService.searchedCities;
+    const value = event.target.value;
+    if (value.length && value.trim() != "" && this.searchedCities.length) {
+      this.showCitiesAlreadySearched = true;
+
+      this.searchedCities = this.searchedCities.filter(item => {
+        return item.toLowerCase().indexOf(value.toLowerCase()) > -1;
+      });
+    } else {
+      this.showCitiesAlreadySearched = false;
+    }
+  }
+
+  selectedCityFromSearchBar(city) {
+    this.userInputCity = city;
+    this.showCitiesAlreadySearched = false;
+    this.getHistoricalData();
+  }
 
   searchByKeyword() {
     this.getHistoricalData();
   }
 
   async getHistoricalData() {
+    this.showCitiesAlreadySearched = false;
+
     for (let i = 1; i <= 5; i++) {
       if (i === 1) {
         this.pastDate.setDate(this.currentDate.getDate() - 1);
@@ -94,7 +135,14 @@ export class HistoryPage {
           .subscribe(
             weather => {
               this.weatherForecast = weather;
-              this.daysForecastArray.push(this.weatherForecast.data[0]);
+
+              if (this.weatherForecast !== null) {
+                this.emptyWeatherForecast = false;
+                this.daysForecastArray.push(this.weatherForecast.data[0]);
+              } else {
+                this.emptyWeatherForecast = true;
+              }
+
               resolve();
             },
             error => {
@@ -117,106 +165,166 @@ export class HistoryPage {
 
   showSlides(weatherForecast, daysForecastArray) {
     if (weatherForecast != null) {
-      this.clearChartData();
+      this.emptyWeatherForecast = false;
+      this.clearChartDataAndRefreshResult();
 
       daysForecastArray
         .map(item => {
           return item.datetime;
         })
-        .forEach(item => this.doughnutChartDaysLabels.push(item));
+        .forEach(item => this.barChartDaysLabels.push(item));
 
       daysForecastArray
         .map(item => {
           return item.temp;
         })
-        .forEach(item => this.doughnutChartTemperatureData.push(item));
+        .forEach(item => this.barChartTemperatureData.push(item));
 
       daysForecastArray
         .map(item => {
           return item.pres;
         })
-        .forEach(item => this.doughnutChartPressureData.push(item));
+        .forEach(item => this.barChartPressureData.push(item));
 
       daysForecastArray
         .map(item => {
           return item.rh;
         })
-        .forEach(item => this.doughnutChartHumidityData.push(item));
+        .forEach(item => this.barChartHumidityData.push(item));
 
       this.calculateMaxAvgLowValues();
+      this.modifyTemplateCard(
+        this.cardTitleTemperature,
+        this.unitOfMeasurementTemperature,
+        this.lowestValueTemp,
+        this.averageValueTemp,
+        this.maxValueTemp,
+        this.barChartTemperatureData
+      );
+      this.modifyTemplateCard(
+        this.cardTitlePressure,
+        this.unitOfMeasurementPressure,
+        this.lowestValuePressure,
+        this.averageValuePressure,
+        this.maxValuePressure,
+        this.barChartPressureData
+      );
+      this.modifyTemplateCard(
+        this.cardTitleHumidity,
+        this.unitOfMeasurementHumidity,
+        this.lowestValueHumidity,
+        this.averageValueHumidity,
+        this.maxValueHumidity,
+        this.barChartHumidityData
+      );
       this.setChartsLabelsAndColors();
     } else {
-      this.clearChartData();
+      this.clearChartDataAndRefreshResult();
 
       this.daysForecastArray = [];
       this.weatherForecast = {};
 
-      this.presentAlert(
-        "Invalid City Name or ID",
-        "",
-        "Please enter valid city name or id."
-      );
+      return (this.emptyWeatherForecast = true);
+
+      // this.presentAlert(
+      //   "Invalid City Name or ID",
+      //   "",
+      //   "Please enter valid city name or id."
+      // );
     }
+  }
+
+  modifyTemplateCard(
+    cardTitleToBeAddedToArray,
+    unitOfMeasurementToBeAddedToArray,
+    lowestValueToBeAddedToArray,
+    averageValueToBeAddedToArray,
+    maxValueToBeAddedToArray,
+    barChartDataToBeAddedToArray
+  ) {
+    let card: TemplateCardHistory = {
+      cardTitle: cardTitleToBeAddedToArray,
+      unitOfMeasurement: unitOfMeasurementToBeAddedToArray,
+      lowestValue: lowestValueToBeAddedToArray,
+      averageValue: averageValueToBeAddedToArray,
+      maxValue: maxValueToBeAddedToArray,
+      barChartData: barChartDataToBeAddedToArray
+    };
+
+    this.templateCards.push(card);
   }
 
   calculateMaxAvgLowValues() {
     this.lowestValueTemp = this.weatherService.calculateMinValue(
-      this.doughnutChartTemperatureData
+      this.barChartTemperatureData
     );
     this.lowestValuePressure = this.weatherService.calculateMinValue(
-      this.doughnutChartPressureData
+      this.barChartPressureData
     );
     this.lowestValueHumidity = this.weatherService.calculateMinValue(
-      this.doughnutChartHumidityData
+      this.barChartHumidityData
     );
 
     this.averageValueTemp = this.weatherService.calculateAverageValue(
-      this.doughnutChartTemperatureData
+      this.barChartTemperatureData
     );
     this.averageValuePressure = this.weatherService.calculateAverageValue(
-      this.doughnutChartPressureData
+      this.barChartPressureData
     );
     this.averageValueHumidity = this.weatherService.calculateAverageValue(
-      this.doughnutChartHumidityData
+      this.barChartHumidityData
     );
 
     this.maxValueTemp = this.weatherService.calculateMaxValue(
-      this.doughnutChartTemperatureData
+      this.barChartTemperatureData
     );
     this.maxValuePressure = this.weatherService.calculateMaxValue(
-      this.doughnutChartPressureData
+      this.barChartPressureData
     );
     this.maxValueHumidity = this.weatherService.calculateMaxValue(
-      this.doughnutChartHumidityData
+      this.barChartHumidityData
     );
   }
 
   setChartsLabelsAndColors() {
-    this.temperatureChart.chart.config.data.labels = this.doughnutChartDaysLabels;
-    this.pressureChart.chart.config.data.labels = this.doughnutChartDaysLabels;
-    this.humidityChart.chart.config.data.labels = this.doughnutChartDaysLabels;
+    console.log(this.slides);
+    //@ts-ignore
+    this.baseCharts.changes.subscribe(() => {
+      //@ts-ignore
+      let charts = this.baseCharts.toArray();
+      charts[0].chart.config.data.labels = this.barChartDaysLabels;
+      charts[0].chart.config.data.datasets[0].labels = this.unitOfMeasurementTemperature;
+      charts[0].chart.config.data.datasets[0].label = this.unitOfMeasurementTemperature;
+      charts[1].chart.config.data.labels = this.barChartDaysLabels;
+      charts[1].chart.config.data.datasets[0].labels = this.unitOfMeasurementPressure;
+      charts[1].chart.config.data.datasets[0].label = this.unitOfMeasurementPressure;
+      charts[2].chart.config.data.labels = this.barChartDaysLabels;
+      charts[2].chart.config.data.datasets[0].labels = this.unitOfMeasurementHumidity;
+      charts[2].chart.config.data.datasets[0].label = this.unitOfMeasurementHumidity;
 
-    this.temperatureChart.chart.config.data.datasets[0].backgroundColor = this.chartBackgroundColors;
-    this.temperatureChart.chart.config.data.datasets[0].borderColor = this.chartBorderColor;
-    this.temperatureChart.chart.config.data.datasets[0].pointBackgroundColor = this.chartPointBackgroundColor;
-    this.temperatureChart.chart.config.data.datasets[0].pointBorderColor = this.chartBorderColor;
+      charts[0].chart.config.data.datasets[0].backgroundColor = this.chartBackgroundColors;
+      charts[0].chart.config.data.datasets[0].borderColor = this.chartBorderColor;
+      charts[0].chart.config.data.datasets[0].pointBackgroundColor = this.chartPointBackgroundColor;
+      charts[0].chart.config.data.datasets[0].pointBorderColor = this.chartBorderColor;
 
-    this.pressureChart.chart.config.data.datasets[0].backgroundColor = this.chartBackgroundColors;
-    this.pressureChart.chart.config.data.datasets[0].borderColor = this.chartBorderColor;
-    this.pressureChart.chart.config.data.datasets[0].pointBackgroundColor = this.chartPointBackgroundColor;
-    this.pressureChart.chart.config.data.datasets[0].pointBorderColor = this.chartBorderColor;
+      charts[1].chart.config.data.datasets[0].backgroundColor = this.chartBackgroundColors;
+      charts[1].chart.config.data.datasets[0].borderColor = this.chartBorderColor;
+      charts[1].chart.config.data.datasets[0].pointBackgroundColor = this.chartPointBackgroundColor;
+      charts[1].chart.config.data.datasets[0].pointBorderColor = this.chartBorderColor;
 
-    this.humidityChart.chart.config.data.datasets[0].backgroundColor = this.chartBackgroundColors;
-    this.humidityChart.chart.config.data.datasets[0].borderColor = this.chartBorderColor;
-    this.humidityChart.chart.config.data.datasets[0].pointBackgroundColor = this.chartPointBackgroundColor;
-    this.humidityChart.chart.config.data.datasets[0].pointBorderColor = this.chartBorderColor;
+      charts[2].chart.config.data.datasets[0].backgroundColor = this.chartBackgroundColors;
+      charts[2].chart.config.data.datasets[0].borderColor = this.chartBorderColor;
+      charts[2].chart.config.data.datasets[0].pointBackgroundColor = this.chartPointBackgroundColor;
+      charts[2].chart.config.data.datasets[0].pointBorderColor = this.chartBorderColor;
+    });
   }
 
-  clearChartData() {
-    this.doughnutChartDaysLabels = [];
-    this.doughnutChartPressureData = [];
-    this.doughnutChartTemperatureData = [];
-    this.doughnutChartHumidityData = [];
+  clearChartDataAndRefreshResult() {
+    this.templateCards = [];
+    this.barChartDaysLabels = [];
+    this.barChartPressureData = [];
+    this.barChartTemperatureData = [];
+    this.barChartHumidityData = [];
   }
 
   async presentAlert(headerMessage, subHeaderMessage, alertMessage) {
