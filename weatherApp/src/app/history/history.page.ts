@@ -287,7 +287,6 @@ export class HistoryPage {
   }
 
   setChartsLabelsAndColors() {
-    console.log(this.slides);
     //@ts-ignore
     this.baseCharts.changes.subscribe(() => {
       //@ts-ignore
