@@ -32,7 +32,7 @@
     "@ionic/pro": "2.0.3",
     "@ionic/schematics-angular": "1.0.1",
     "chart.js": "^2.7.2",
-    "cordova-android": "7.0.0",
+    "cordova-android": "^7.1.1",
     "cordova-plugin-device": "^2.0.2",
     "cordova-plugin-ionic-keyboard": "^2.1.2",
     "cordova-plugin-ionic-webview": "^2.0.1",
