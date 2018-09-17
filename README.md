@@ -1,5 +1,7 @@
 weatherApp
 
+Test description from Sensidev: https://hackmd.io/s/S1UqLSn4Q
+
 Short description:
 weatherApp is a simple and fast way to find out how the weather is in your city. All you have to do is enter your city name or id and an interactive chart will show you how the weather will be for the next 5 days. Also, you have the option to view historical data (including lowest, average and maximum values) for the past 5 days. Enjoy :D
 
